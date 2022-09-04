@@ -22,9 +22,12 @@ There are multiple ways you can host a static website on AWS, including S3, Ampl
 
 CodeBuild, CodeDeploy were used to build CI/CD pipeline, and CodePipeline was used to orchestrate the process.
 
-Route 53 was used to route a custom domain to the S3 bucket website endpoint.
+A CloudFront distribution was set up in front of the S3 bucket, so that the content can be cached in edge locations to improve website performance, HTTPS connection can be established, and access to S3 bucket can be restricted to CloudFront distribution with origin access control settings, which enhances security. 
 
-[Optional] A CloudFront distribution was set up in front of the S3 bucket, so that the content can be cached in edge locations and access to S3 bucket can be restricted to CloudFront distribution with origin access control settings, which enhances security. To ensure that users always get the latest content from CloudFront, S3 Event Notifications were used to trigger a Lambda function whenever the bucket gets updated, to invalidate CloudFront cache.
+To ensure that users always get the latest content from CloudFront, S3 Event Notifications were used to trigger a Lambda function whenever the bucket gets updated to invalidate CloudFront cache. 
+
+Route 53 was used to route a custom domain to the CloudFront distribution domain name.
+<br/><br/>
 
 
 ## 1. Host React Website on S3
@@ -112,7 +115,46 @@ After creating the pipeline, you will notice that it starts to execute and fails
 <img width="885" alt="Screenshot 2022-09-03 at 4 26 11 PM" src="https://user-images.githubusercontent.com/77185679/188286701-2bdc4596-c8be-484d-8910-c8240a6c82a4.png">
 <br/><br/>
 
-To fix this, copy the buildspec.yml file in this project to the root directory of your reposiroty, commit and push the change. The pipeline should be executing again and this time it should work.
+To fix this, copy the buildspec.yml file in this project to the root directory of your reposiroty, commit and push the change. The file allows the build server to install npm, create build with "npm run build", and output all files under build directory as artifacts to the next stage, which is CodeDeploy. <br/>
+The pipeline should be executing again and this time it should work.
+<img width="1078" alt="Screenshot 2022-09-03 at 5 27 01 PM" src="https://user-images.githubusercontent.com/77185679/188288162-6bc5dc80-49f2-4a67-8f1f-841426f46a0a.png">
+<br/><br/>
 
 ### Test the CI/CD Pipeline
 To test that the CI/CD pipeline is indeed working, try make some small changes in your code (e.g. changing background color of a page), commit and push the change. After CodePipeline finishes execution, you should see the change on your website by clicking website endpoint in S3.
+<br/><br/>
+
+
+## 3. Set up a CloudFront Distribution
+Now we have a website hosted on S3 with CI/CD, but it has several problems:
+- S3 website endpoint only supports HTTP, which is unsecure if the user is going to enter some sensitive information
+- The S3 bucket lives only in one region, which makes accessing the website from other regions of the world slow
+- Allowing direct access to S3 could be insecure, and there is no control over who can access the website
+
+To solve the problems above, we can set up a CloudFront distribution in front of the S3 bucket.
+
+### What is CloudFront
+CloudFront is a Content Delivery Network (CDN) hosted by AWS, which caches content at more than 200 edge locations around the world to improve read performance. It supports HTTPS and several ways to control viewer access, which enhances security for your website. For more information, see https://aws.amazon.com/cloudfront/?nc=sn&loc=0
+
+### Steps
+1. Go to CloudFront, click on "Create distribution".
+2. Select your S3 bucket as origin domain.
+3. For "Origin access", select "Origin access control settings" and click on "Create control setting". Leave everything as default and click on "Create".
+<img width="603" alt="Screenshot 2022-09-03 at 11 03 06 PM" src="https://user-images.githubusercontent.com/77185679/188295190-b7272f5e-4bcf-4938-a01e-7956f0fe8eb0.png">
+4. In Settings, you can select which edge locations you want to use, which will affect the pricing.
+<img width="458" alt="Screenshot 2022-09-03 at 11 06 24 PM" src="https://user-images.githubusercontent.com/77185679/188295285-1cdb65f0-fee8-4798-a55b-ff81bf7b8d8e.png">
+5. For "Default root object", enter "index.html".
+<img width="582" alt="Screenshot 2022-09-03 at 11 27 56 PM" src="https://user-images.githubusercontent.com/77185679/188295800-3d49455c-0ae3-43f0-9175-3e37edbaf957.png">
+6. Click on "Create distribution". You should see a notification at top of the page, asking you to update S3 bucket policy. Copy the policy.
+<img width="1401" alt="Screenshot 2022-09-03 at 11 09 17 PM" src="https://user-images.githubusercontent.com/77185679/188295339-fd672e47-43ee-4972-805c-96e681b1b398.png">
+7. Go to S3 bucket -> Permission, edit bucket policy. Remove the existing policy and paste the copied policy. Click on "Save changes".
+<img width="690" alt="Screenshot 2022-09-03 at 11 12 26 PM" src="https://user-images.githubusercontent.com/77185679/188295425-a39ec722-cecd-4005-b7df-a80ebd2d1c9e.png">
+
+> Previously, we were allowing anyone to perform GetObject on objects in our bucket. Now, only the CloudFront distribution can access bucket objects, which is much more secure.
+
+8. Also under S3 Permissions, edit "Block public access", check "Block all public access" and save changes. Because now we are accessing the bucket through CloudFront, the bucket no longer needs to be public. This follows the AWS least-priviledge principle. For more information, see https://docs.aws.amazon.com/IAM/latest/UserGuide/best-practices.html
+9. In the CloudFront distribution -> Error pages, create the following custom error response.
+<img width="798" alt="Screenshot 2022-09-03 at 11 47 45 PM" src="https://user-images.githubusercontent.com/77185679/188296416-a21dcd0c-1c0c-422f-be96-3562d74d022b.png">
+10. Wait several minutes for the change to be deployed, and then you should be able to access your website through the distribution domain name.
+<img width="1100" alt="Screenshot 2022-09-03 at 11 48 38 PM" src="https://user-images.githubusercontent.com/77185679/188296435-f9991d9b-8792-459a-83aa-c7640f252040.png">
+
