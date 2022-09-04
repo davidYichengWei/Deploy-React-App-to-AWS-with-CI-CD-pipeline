@@ -220,5 +220,42 @@ In this case, we can send S3 Event Notifications whenever the S3 bucket gets upd
 <img width="796" alt="Screenshot 2022-09-04 at 3 38 01 PM" src="https://user-images.githubusercontent.com/77185679/188330683-fd3de64e-22b5-4a83-ae36-f5e243eedd48.png">
 
 13. Push some other changes to your repository. After CodePipeline finishes execution, you should be able to see your website gets updated thourgh CloudFront access.
+<br/><br/>
 
+## 5. Set Up a Custom Domain Name with Route 53
+You probably want to have a custom domain name for your website, instead of using that random CloudFront domain name. **Route 53**, the DNS service offered by AWS, can be used to route your custom domain name to the CloudFront distribution.
 
+### Register a Domain on Route 53
+If you don't have a custom domain yet, you can register one on Route 53. Go to **Route 53** -> **Domains** -> **Registered domain**, click on **Register domain**. Then just follow the steps to purchase your custom domain. For more details, see https://docs.aws.amazon.com/Route53/latest/DeveloperGuide/domain-register.html.
+
+### Transfer a Domain to Route 53
+If you already have a custom domain on another domain name registrar, you can transfer it to Route 53 https://docs.aws.amazon.com/Route53/latest/DeveloperGuide/domain-transfer-to-route-53.html.
+
+### Set Up Alternate Domain Names for the CloudFront Distribution
+1. Go to your CloudFront distribution, in **General** -> **Settings**, click on **Edit**.
+<img width="1326" alt="Screenshot 2022-09-04 at 7 16 10 PM" src="https://user-images.githubusercontent.com/77185679/188337208-2cd561da-b10c-48ae-9511-7654bd3535c3.png">
+
+2. Under **Alternate domain name (CNAME)**, add your custom domain name.
+3. Under **Custom SSL certificate**, click on **Request certificate**. This will lead to an ACM (AWS Certificate Manager) page.
+4. Select **Request a public certificate** and click on **Next**.
+5. Under **Fully qualified domain name**, enter your domain name again. Select **DNS validation** and click on **Request**.
+6. You should see a notification at top requiring further action. Click on **View certificate**.
+<img width="1350" alt="Screenshot 2022-09-04 at 7 22 43 PM" src="https://user-images.githubusercontent.com/77185679/188337405-8614554d-a8fd-4a12-9f15-ad90d04824eb.png">
+
+7. You need to add the record under **Domains** to your Route 53 hosted zone. Click on **Create records in Route 53**.
+<img width="1295" alt="Screenshot 2022-09-04 at 7 23 44 PM" src="https://user-images.githubusercontent.com/77185679/188337436-4cb712ab-ea3c-46ce-a7a9-bc9dbd82bbc7.png">
+
+8. The record should be automatically selected. Review and click on **Create records**. Wait for several minutes for your certificate to be issued.
+<img width="1097" alt="Screenshot 2022-09-04 at 7 26 02 PM" src="https://user-images.githubusercontent.com/77185679/188337514-480ee3e6-0db9-4798-bf3c-17f6f5c929ed.png">
+
+9. Once the certificate is issued, go back to CloudFront settings, refresh and select the certificate. Click on **Save changes**.
+<img width="758" alt="Screenshot 2022-09-04 at 7 29 03 PM" src="https://user-images.githubusercontent.com/77185679/188337626-8114e596-af1a-431c-ab7f-07b84a7b0436.png">
+
+10. Go to **Route 53** -> **Hosted zones**, click on your domain name.
+11. Click on **Create record**. Select **Alias**, route traffic to your CloudFront distribution, click on **Create records**.
+<img width="1089" alt="Screenshot 2022-09-04 at 7 33 33 PM" src="https://user-images.githubusercontent.com/77185679/188337757-8cacbcb6-3290-472b-9ab7-41b146f2e88b.png">
+
+12. Now you should be able to access your website through your custom domain name.
+<br/><br/>
+
+## Hope you found this guide helpful :)
