@@ -259,3 +259,8 @@ If you already have a custom domain on another domain name registrar, you can tr
 <br/><br/>
 
 ## Hope you found this guide helpful :)
+
+## References
+https://blog.cloudthat.com/step-by-step-guide-to-deploy-reactjs-app-on-aws-s3/ <br/>
+https://towardsaws.com/set-up-a-cloud-native-ci-cd-pipeline-in-under-7-minutes-using-aws-codepipeline-s3-and-codebuild-1b6166daf694 <br/>
+https://tecadmin.net/python-script-create-cloudfront-invalidations/
