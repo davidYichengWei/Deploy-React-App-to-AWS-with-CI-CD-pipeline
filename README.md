@@ -26,8 +26,11 @@ A **CloudFront** distribution was set up in front of the S3 bucket, so that the 
 
 To ensure that users always get the latest content from CloudFront, **S3 Event Notifications** were used to trigger a **Lambda** function whenever the bucket gets updated to invalidate CloudFront cache. 
 
+
 **Route 53** was used to route a custom domain to the CloudFront distribution domain name.
-<br/><br/>
+
+Below is an architecture diagram for this project.
+<img width="952" alt="Screenshot 2022-09-04 at 8 16 24 PM" src="https://user-images.githubusercontent.com/77185679/188339133-4d11e36d-c5d4-42de-ba0e-4b2e2707d724.png">
 
 
 ## 1. Host React Website on S3
