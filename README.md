@@ -30,7 +30,7 @@ To ensure that users always get the latest content from CloudFront, **S3 Event N
 **Route 53** was used to route a custom domain to the CloudFront distribution domain name.
 
 Below is an architecture diagram for this project.
-<img width="952" alt="Screenshot 2022-09-04 at 8 16 24 PM" src="https://user-images.githubusercontent.com/77185679/188339133-4d11e36d-c5d4-42de-ba0e-4b2e2707d724.png">
+<img width="1170" alt="Screenshot 2022-09-04 at 8 34 44 PM" src="https://user-images.githubusercontent.com/77185679/188339877-996c696e-0050-4f95-b360-0630b1e5de1b.png">
 
 
 ## 1. Host React Website on S3
